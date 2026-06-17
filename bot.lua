@@ -6,7 +6,7 @@ end
 
 local decoder = require("cc.audio.dfpwm").make_decoder()
 
-local file = fs.open("music", "rb")
+local file = fs.open("jang.dfpwm", "rb")
 
 if not file then
  error("music 못 찾음")
