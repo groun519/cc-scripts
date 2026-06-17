@@ -1,13 +1,21 @@
 local speaker = peripheral.wrap("left")
 
+if not speaker then
+ error("스피커 없음")
+end
+
 local decoder = require("cc.audio.dfpwm").make_decoder()
 
-local file = fs.open("music","rb")
+local file = fs.open("music", "rb")
+
+if not file then
+ error("music 못 찾음")
+end
 
 while true do
- local chunk = file.read(16*1024)
+ local chunk = file.read(16384)
 
- if not chunk then
+ if chunk == nil then
   break
  end
 
@@ -19,3 +27,5 @@ while true do
 end
 
 file.close()
+
+print("끝")
