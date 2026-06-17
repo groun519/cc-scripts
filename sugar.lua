@@ -1,7 +1,6 @@
-local LENGTH = 10      -- 한 줄 길이. 실제 이동은 9칸
-local PASSES = 5       -- 세로 줄 개수
-local SHIFT = 2        -- 다음 줄로 이동할 간격
-local WAIT = 300       -- 반복 대기 시간
+local LENGTH = 11
+local WIDTH = 3
+local WAIT = 300
 
 local FUEL_NAMES = {
  ["minecraft:coal"] = true,
@@ -39,13 +38,22 @@ local function harvestSides()
  turtle.turnLeft()
 end
 
-local function refuelFromRight()
+local function moveAndHarvest(n)
+ for i = 1, n do
+  harvestSides()
+  moveForward(1)
+ end
+ harvestSides()
+end
+
+-- 왼쪽 석탄 상자에서 연료 보급
+local function refuelFromLeft()
  local fuel = turtle.getFuelLevel()
  if fuel == "unlimited" or fuel > 300 then
   return
  end
 
- turtle.turnRight()
+ turtle.turnLeft()
 
  for slot = 1, 16 do
   turtle.select(slot)
@@ -67,7 +75,7 @@ local function refuelFromRight()
   end
  end
 
- turtle.turnLeft()
+ turtle.turnRight()
 
  local now = turtle.getFuelLevel()
  if now ~= "unlimited" and now <= 50 then
@@ -75,9 +83,8 @@ local function refuelFromRight()
  end
 end
 
-local function dumpToLeft()
- turtle.turnLeft()
-
+-- 앞 사탕수수 상자에 배출
+local function dumpForward()
  for slot = 1, 16 do
   turtle.select(slot)
   local item = turtle.getItemDetail()
@@ -87,59 +94,33 @@ local function dumpToLeft()
   end
  end
 
- turtle.turnRight()
  turtle.select(1)
 end
 
 local function patrol()
  turtle.up()
 
- for pass = 1, PASSES do
-  for i = 1, LENGTH do
-   harvestSides()
+ -- 시작 위치 기준 오른쪽으로 순회 시작
+ turtle.turnRight()
 
-   if i < LENGTH then
-    moveForward(1)
-   end
-  end
+ moveAndHarvest(LENGTH)
+ turtle.turnRight()
 
-  if pass < PASSES then
-   if pass % 2 == 1 then
-    turtle.turnLeft()
-    moveForward(SHIFT)
-    turtle.turnLeft()
-   else
-    turtle.turnRight()
-    moveForward(SHIFT)
-    turtle.turnRight()
-   end
-  end
- end
+ moveAndHarvest(WIDTH)
+ turtle.turnRight()
 
- local totalShift = (PASSES - 1) * SHIFT
+ moveAndHarvest(LENGTH)
+ turtle.turnRight()
 
- if PASSES % 2 == 1 then
-  turtle.turnLeft()
-  turtle.turnLeft()
-  moveForward(LENGTH - 1)
+ moveAndHarvest(WIDTH)
 
-  turtle.turnLeft()
-  moveForward(totalShift)
-
-  turtle.turnLeft()
- else
-  turtle.turnLeft()
-  moveForward(totalShift)
-
-  turtle.turnLeft()
- end
-
+ -- 여기까지 오면 처음 위치, 처음 방향으로 복귀
  turtle.down()
 end
 
 while true do
- refuelFromRight()
+ refuelFromLeft()
  patrol()
- dumpToLeft()
+ dumpForward()
  sleep(WAIT)
 end
